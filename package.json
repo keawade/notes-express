@@ -1,0 +1,20 @@
+{
+  "name": "notes-express",
+  "version": "1.0.0",
+  "main": "server.js",
+  "repository": "git@github.com:keawade/notes-express.git",
+  "author": "Keith Wade <keawade@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.14.1",
+    "mongoose": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.0.35",
+    "@types/mongoose": "^4.7.3",
+    "nodemon": "^1.11.0"
+  }
+}
