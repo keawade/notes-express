@@ -18,84 +18,151 @@ const Note = require('./models/note')
 app.get('/note', (req, res) => {
   Note.find({}, 'title content')
     .then((notes) => {
-      res.status(200).send(notes)
+      res.status(200).send({
+        'data': notes.map((note => ({
+          'type': 'note',
+          'id': note._id,
+          'attributes': {
+            'title': note.title,
+            'content': note.content,
+          }
+        })))
+      })
     })
     .catch((error) => {
       console.error('failed to GET all notes', error)
-      res.send(500).send({ 'message': 'internal error' })
+      res.status(500).send({
+        'errors': [{
+          'status': '551',
+          'title': 'internal error'
+        }]
+      })
     })
 })
 
 app.post('/note', (req, res) => {
-  if (!req.body.title || !req.body.content) {
+  if (!req.body.data) {
     console.warn('incomplete POST request', req.body)
-    res.status(400).send({ 'message': 'invalid body' })
+    res.status(400).send({
+      'errors': [{
+        'status': '452',
+        'title': 'invalid body'
+      }]
+    })
     return
   }
   const note = new Note({
-    title: req.body.title,
-    content: req.body.content,
+    'title': req.body.data.attributes.title,
+    'content': req.body.data.attributes.content,
   })
   note.save()
     .then((newNote) => {
       res.status(201).send({
-        title: newNote.title,
-        content: newNote.content,
+        'data': {
+          'type': 'note',
+          'id': newNote._id,
+          'attributes': {
+            'title': newNote.title,
+            'content': newNote.content,
+          }
+        }
       })
     })
     .catch((error) => {
       console.error('failed to POST new note', error)
-      res.status(500).send({ 'message': 'internal error' })
+      res.status(500).send({
+        'errors': [{
+          'status': '552',
+          'title': 'internal error'
+        }]
+      })
     })
 })
 
 app.put('/note', (req, res) => {
-  if (!req.body.title || !req.body.content) {
+  if (!req.body.data) {
     console.warn('incomplete POST request', req.body)
-    res.status(400).send({ 'message': 'invalid body' })
+      res.status(400).send({
+        'errors': [{
+          'status': '453',
+          'title': 'invalid body'
+        }]
+      })
     return
   }
-  Note.findOne({ 'title': req.body.title })
+  Note.findOne({ '_id': req.body.data._id })
     .then((note) => {
-      note.content = req.body.content
+      note.title = req.body.data.attributes.title
+      note.content = req.body.data.attributes.content
       note.save()
         .then((updatedNote) => {
           res.status(200).send({
-            title: updatedNote.title,
-            content: updatedNote.title,
+            'data': {
+              'type': 'note',
+              'id': updatedNote._id,
+              'attributes': {
+                'title': updatedNote.title,
+                'content': updatedNote.content,
+              }
+            }
           })
         })
         .catch((error) => {
           console.error('failed to update note', req.body)
-          res.status(500).send({ 'message': 'internal error' })
+          res.status(500).send({
+            'errors': [{
+              'status': '553',
+              'title': 'internal error'
+            }]
+          })
         })
     })
     .catch((error) => {
       console.error('failed to find note to update', error)
-      res.status(404).send({ 'message': 'note not found' })
+      res.status(404).send({
+        'errors': [{
+          'status': '404',
+          'title': 'note not found'
+        }]
+      })
     })
 })
 
 app.delete('/note', (req, res) => {
   if (!req.body.title) {
     console.warn('incomplete DELETE request', req.body)
-    res.status(400).send({ 'message': 'invalid body' })
+      res.status(400).send({
+        'errors': [{
+          'status': '454',
+          'title': 'invalid body'
+        }]
+      })
     return
   }
-  Note.findOne({ 'title': req.body.title })
+  Note.findOne({ '_id': req.body.data._id })
     .then((note) => {
       note.remove()
         .then(() => {
-          res.status(200).send({ 'message': 'note deleted' })
+          res.status(200).send()
         })
         .catch((error) => {
           console.error('failed to delete note', error)
-          res.status(500).send({ 'message': 'internal error' })
+          res.status(500).send({
+            'errors': [{
+              'status': '554',
+              'title': 'internal error'
+            }]
+          })
         })
     })
     .catch((error) => {
       console.error('failed to find note to delete', error)
-      res.status(404).send({ 'message': 'note not found' })
+      res.status(404).send({
+        'errors': [{
+          'status': '404',
+          'title': 'note not found'
+        }]
+      })
     })
 })
 
